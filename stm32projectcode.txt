@@ -1,0 +1,118 @@
+#include <Wire.h>
+#include <VL53L0X.h>
+
+// VL53L0X sensor objects
+VL53L0X sensor1;
+VL53L0X sensor2;
+VL53L0X sensor3;
+
+// XSHUT Pins
+#define XSHUT1 D5  // GPIO pin connected to XSHUT of first sensor
+#define XSHUT2 D8  // GPIO pin connected to XSHUT of second sensor
+#define XSHUT3 D10  // GPIO pin connected to XSHUT of third sensor
+
+// Motor Pins
+#define MOTOR1 D12  // GPIO pin connected to the first haptic motor
+#define MOTOR2 D4   // GPIO pin connected to the second haptic motor
+#define MOTOR3 D3   // GPIO pin connected to the third haptic motor
+
+// LED Pins
+#define LED1 D6  // GPIO pin connected to the LED for sensor1
+#define LED2 D7  // GPIO pin connected to the LED for sensor2
+#define LED3 D11 // GPIO pin connected to the LED for sensor3
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();  // Initialize the primary I2C bus
+
+  // Set XSHUT pins to output mode
+  pinMode(XSHUT1, OUTPUT);
+  pinMode(XSHUT2, OUTPUT);
+  pinMode(XSHUT3, OUTPUT);
+  
+  // Set Motor and LED pins to output mode
+  pinMode(MOTOR1, OUTPUT);
+  pinMode(MOTOR2, OUTPUT);
+  pinMode(MOTOR3, OUTPUT);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+  // Reset all sensors
+  digitalWrite(XSHUT1, LOW);
+  digitalWrite(XSHUT2, LOW);
+  digitalWrite(XSHUT3, LOW);
+  delay(10);
+
+  // Initialize sensor1
+  digitalWrite(XSHUT1, HIGH);
+  delay(50);
+  sensor1.init(true); // Default I2C bus (Wire)
+  sensor1.startContinuous();
+
+  // Initialize sensor2
+  digitalWrite(XSHUT2, HIGH);
+  delay(50);
+  sensor2.init(true); // Default I2C bus (Wire)
+  sensor2.startContinuous();
+
+  // Initialize sensor3
+  digitalWrite(XSHUT3, HIGH);
+  delay(50);
+  sensor3.init(true);  // Initialize on the default I2C bus
+  sensor3.startContinuous();
+}
+
+void loop() {
+  // Read the latest measurements from each sensor
+  uint16_t distance1 = sensor1.readRangeContinuousMillimeters() / 10;
+  uint16_t distance2 = sensor2.readRangeContinuousMillimeters() / 10;
+  uint16_t distance3 = sensor3.readRangeContinuousMillimeters() / 10;
+
+   // Control motors based on distance measurements
+  bool motor1State = distance1 > 30 && distance1 < 90;
+  bool motor2State = distance2 > 30 && distance2 < 90;
+  bool motor3State = distance3 > 30 && distance3 < 90;
+
+  digitalWrite(MOTOR1, motor1State ? HIGH : LOW);
+  digitalWrite(MOTOR2, motor2State ? HIGH : LOW);
+  digitalWrite(MOTOR3, motor3State ? HIGH : LOW);
+
+  // Control LEDs based on distance measurements
+  digitalWrite(LED1, motor1State ? HIGH : LOW);
+  digitalWrite(LED2, motor2State ? HIGH : LOW);
+  digitalWrite(LED3, motor3State ? HIGH : LOW);
+
+  // Output to the Serial Monitor
+  if (motor1State) {
+    Serial.print("Haptic Motor(right) is running :");
+    Serial.print("Distance1:"); Serial.print(distance1); Serial.print("\t\t");
+    Serial.print("LED1 is ON\t");
+  } else {
+    Serial.print("nothing is detected at sensor 1.");
+    Serial.print("Distance1:"); Serial.print(distance1); Serial.print("\t\t");
+    Serial.print("LED1 is OFF\t");
+  }
+
+  if (motor2State) {
+    Serial.print("Haptic Motor(front) is running :");
+    Serial.print("Distance2:"); Serial.print(distance2); Serial.print("\t\t");
+    Serial.print("LED2 is ON\t");
+  } else {
+    Serial.print("nothing is detected at Sensor 2.");
+    Serial.print("Distance2:"); Serial.print(distance2); Serial.print("\t\t");
+    Serial.print("LED2 is OFF\t");
+  }
+
+  if (motor3State) {
+    Serial.print("Haptic Motor(left) is running :");
+    Serial.print("Distance3:"); Serial.println(distance3);
+    Serial.println("LED3 is ON");
+  } else {
+    Serial.print("nothing is detected at Sensor3.");
+    Serial.print("Distance3:"); Serial.println(distance3);
+    Serial.println("LED3 is OFF");
+  }
+
+  delay(100);  // Delay before the next loop iteration
+}

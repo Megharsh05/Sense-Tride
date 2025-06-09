@@ -1,1 +1,1 @@
-This o Project for blind using STM32 Board using ArduinoIDE
+This Project is for blind using STM32 Board using ArduinoIDE

@@ -66,5 +66,5 @@ The system consists of:
 
 ## 🔗 References
 
-Please refer to the full [project documentation](https://github.com/Megharsh05/Sense-Tride) for detailed technical details and literature references.
+Please refer to the full [project documentation](https://github.com/Megharsh05/Sense-Tride/blob/main/SenseStride_final.docx) for detailed technical details and literature references.
 
